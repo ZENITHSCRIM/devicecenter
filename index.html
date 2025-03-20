@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>デバイス & ネットワーク情報</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            margin: auto;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px 0;
+            cursor: pointer;
+        }
+        #specs {
+            margin-top: 20px;
+            text-align: left;
+            word-break: break-word;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>デバイス & ネットワーク情報</h1>
+        <button onclick="getDeviceSpecs()">スペックを取得</button>
+        <div id="specs"></div>
+    </div>
+    <script>
+        async function getDeviceSpecs() {
+            const specs = {
+                "OS": navigator.platform,
+                "ブラウザ情報": navigator.userAgent,
+                "画面解像度": `${window.screen.width} x ${window.screen.height}`,
+                "表示領域": `${window.innerWidth} x ${window.innerHeight}`,
+                "CPUコア数": navigator.hardwareConcurrency || "不明",
+                "メモリ": navigator.deviceMemory ? `${navigator.deviceMemory} GB` : "不明",
+                "ネットワークタイプ": navigator.connection ? navigator.connection.effectiveType : "不明",
+            };
+
+            // IPアドレス取得（外部API使用）
+            try {
+                const ipResponse = await fetch("https://api64.ipify.org?format=json");
+                const ipData = await ipResponse.json();
+                specs["IPアドレス"] = ipData.ip;
+            } catch (error) {
+                specs["IPアドレス"] = "取得失敗";
+            }
+
+            // ネットワーク遅延（Ping測定）
+            const startTime = performance.now();
+            try {
+                await fetch("https://www.google.com/favicon.ico", { method: "HEAD", mode: "no-cors" });
+            } catch (error) {}
+            const latency = Math.round(performance.now() - startTime);
+            specs["ネットワーク遅延 (Ping)"] = latency + " ms";
+
+            // 結果をHTMLに表示
+            let specsHTML = "<h2>スペック情報</h2><ul>";
+            for (const key in specs) {
+                specsHTML += `<li><strong>${key}:</strong> ${specs[key]}</li>`;
+            }
+            specsHTML += "</ul>";
+            document.getElementById("specs").innerHTML = specsHTML;
+        }
+    </script>
+</body>
+</html>
